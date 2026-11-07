@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Cybersecurity awareness{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center g-4 mb-4">
+    <div class="col-lg-8">
+      <h1 class="h3 fw-bold">Cybersecurity awareness</h1>
+      <p class="text-body-secondary mb-0">Short, practical guides to help you recognise phishing, protect your accounts and know what to do when something looks wrong.</p>
+    </div>
+    <div class="col-lg-4">
+      <a href="{{ url_for('awareness.quiz') }}" class="card pg-card pg-card-link text-decoration-none bg-info-subtle border-info-subtle">
+        <div class="card-body d-flex align-items-center gap-3">
+          <i class="bi bi-patch-question fs-2 text-info-emphasis"></i>
+          <div><div class="fw-bold text-body">Spot the Phish quiz</div><div class="small text-body-secondary">Test yourself with 8 real-world style links</div></div>
+          <i class="bi bi-arrow-right ms-auto text-body"></i>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for a in articles %}
+    <div class="col-md-6 col-lg-4">
+      <a href="{{ url_for('awareness.article', slug=a.slug) }}" class="card pg-card pg-card-link h-100 text-decoration-none">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="pg-icon pg-icon-sm bg-info-subtle text-info-emphasis"><i class="bi bi-{{ a.icon }}"></i></div>
+            <span class="small text-body-secondary">{{ a.category }}</span>
+          </div>
+          <h2 class="h6 fw-bold text-body">{{ a.title }}</h2>
+          <p class="small text-body-secondary mb-0">{{ a.summary }}</p>
+        </div>
+      </a>
+    </div>
+    {% else %}
+    <p class="text-body-secondary">No articles have been published yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+{% set ep = request.endpoint or '' %}
+<div class="container-fluid px-0">
+  <div class="row g-0">
+    <aside class="col-lg-3 col-xl-2 pg-admin-side">
+      <div class="sticky-lg-top p-3">
+        <div class="small fw-bold text-uppercase text-body-secondary px-2 mb-2 d-none d-lg-block" style="letter-spacing: .07em">Administration</div>
+        <nav class="nav flex-column gap-1" aria-label="Admin">
+          {% for endpoint, icon, label in [
+            ('admin.dashboard', 'speedometer2', 'Dashboard'),
+            ('admin.users', 'people', 'Users'),
+            ('admin.scans', 'list-ul', 'Scanned URLs'),
+            ('admin.articles', 'journal-text', 'Awareness content'),
+            ('admin.activity', 'activity', 'Activity log'),
+          ] %}
+          {% set active = ep == endpoint or (endpoint == 'admin.articles' and 'article' in ep) %}
+          <a class="nav-link text-nowrap {% if active %}active{% endif %}" href="{{ url_for(endpoint) }}" {% if active %}aria-current="page"{% endif %}><i class="bi bi-{{ icon }}"></i>{{ label }}</a>
+          {% endfor %}
+        </nav>
+        <hr class="d-none d-lg-block">
+        <a class="nav-link text-body-secondary small px-2 d-none d-lg-flex gap-2" href="{{ url_for('main.index') }}"><i class="bi bi-box-arrow-up-left"></i> Back to site</a>
+      </div>
+    </aside>
+    <div class="col-lg-9 col-xl-10">
+      <div class="p-3 p-lg-4">
+        {% block admin_content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

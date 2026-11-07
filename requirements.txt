@@ -1,0 +1,13 @@
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+Flask-Migrate==4.0.7
+email-validator==2.2.0
+PyMySQL==1.1.1          # MySQL driver (only needed when DATABASE_URL points to MySQL)
+cryptography>=42        # required by PyMySQL for MySQL 8 default authentication
+scikit-learn>=1.5,<1.8  # optional ML classifier
+joblib>=1.4
+pytest==8.3.3
+gunicorn==23.0.0; sys_platform != "win32"   # production server (Linux / Docker)
+waitress==3.0.2                             # production server that also runs on Windows

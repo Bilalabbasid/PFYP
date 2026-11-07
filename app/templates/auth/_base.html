@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5 pg-auth">
+  <div class="row justify-content-center w-100 mx-0">
+    <div class="col-xl-9 col-lg-10 px-0">
+      <div class="card pg-card pg-auth-card">
+        <div class="row g-0">
+          <div class="col-md-5 pg-auth-side d-none d-md-flex flex-column">
+            <span class="pg-logo mb-4" style="width: 2.75rem; height: 2.75rem; font-size: 1.3rem"><i class="bi bi-shield-lock-fill"></i></span>
+            <h2 class="h4 fw-bold mb-3">{% block side_title %}Stay one step ahead of phishing{% endblock %}</h2>
+            <ul class="list-unstyled mt-2 mb-auto">
+              <li><i class="bi bi-clock-history"></i><span>Keep a searchable history of every link you check</span></li>
+              <li><i class="bi bi-chat-square-text"></i><span>Plain-language reasons for every result</span></li>
+              <li><i class="bi bi-download"></i><span>Export your scans to CSV at any time</span></li>
+              <li><i class="bi bi-mortarboard"></i><span>Free awareness guides and a phishing quiz</span></li>
+            </ul>
+            <div class="small text-white-50 mt-4"><i class="bi bi-shield-check"></i> Tip: always check the address bar before typing a password on any site — including this one.</div>
+          </div>
+          <div class="col-md-7">
+            <div class="p-4 p-lg-5">
+              {% block form %}{% endblock %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

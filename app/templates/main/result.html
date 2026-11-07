@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge %}
+{% block title %}{{ scan.classification }} · {{ scan.domain }}{% endblock %}
+{% block content %}
+{% set c = scan.css_class %}
+{% set icon = {'safe': 'shield-check', 'suspicious': 'exclamation-triangle', 'phishing': 'x-octagon'}[c] %}
+{% set tone = {'safe': 'safe', 'suspicious': 'warn', 'phishing': 'danger'}[c] %}
+{% set steps = {
+  'phishing': ['Do not open the link or download anything from it.', 'Never enter passwords, OTP codes or card details on that page.', 'Report the message as phishing, then delete it.', 'If you already entered details, change your password and contact your bank.'],
+  'suspicious': ['Check who really sent the message — call them using a known number.', 'Go to the official website yourself instead of clicking.', 'Do not enter passwords or personal data until you are sure.', 'When in doubt, report it to your IT/security team.'],
+  'safe': ['Still check the address bar before entering personal details.', 'Be cautious if the message creates urgency or offers prizes.', 'Keep your browser and device updated.', 'Turn on multi-factor authentication for important accounts.'],
+}[c] %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <a href="{{ url_for('main.index') }}" class="small fw-medium text-decoration-none"><i class="bi bi-arrow-left"></i> Scan another link</a>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-copy="{{ scan.url|defang }}" data-copy-msg="A safe, non-clickable copy of the link was copied — good for reporting.">
+        <i class="bi bi-clipboard"></i> Copy safe link
+      </button>
+      {% if current_user.is_authenticated %}
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.history') }}"><i class="bi bi-clock-history"></i> History</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <section class="pg-verdict pg-verdict-{{ c }}" id="result-card" aria-labelledby="classification">
+    <div class="row align-items-center g-4">
+      <div class="col-lg">
+        <div class="d-flex align-items-start gap-3">
+          <span class="pg-verdict-icon pg-icon-{{ tone }}"><i class="bi bi-{{ icon }}"></i></span>
+          <div class="min-w-0" style="min-width: 0">
+            <div class="small fw-semibold text-uppercase text-body-secondary" style="letter-spacing: .06em">Verdict</div>
+            <h1 class="h2 pg-verdict-title mb-1" id="classification">{{ scan.classification }}</h1>
+            <p class="mb-3">{{ scan.advice }}</p>
+            <div class="pg-url font-monospace text-break" title="Shown as text only — not a clickable link">
+              <i class="bi bi-link-45deg text-body-secondary"></i> {{ scan.url }}
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3 small">
+              <span class="pg-chip"><i class="bi bi-globe"></i> {{ scan.domain }}</span>
+              <span class="pg-chip"><i class="bi bi-{{ 'lock' if scan.features.uses_https else 'unlock' }}"></i> {{ 'HTTPS' if scan.features.uses_https else 'HTTP (not encrypted)' }}</span>
+              <span class="pg-chip"><i class="bi bi-clock"></i> {{ scan.created_at|dt }}</span>
+              {% if scan.ml_probability is not none %}<span class="pg-chip"><i class="bi bi-cpu"></i> ML estimate {{ (scan.ml_probability * 100)|round|int }}%</span>{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-auto text-center">
+        <div class="pg-gauge pg-gauge-{{ c }}" role="img" aria-label="Risk score {{ scan.score }} out of 100">
+          <svg viewBox="0 0 36 36" aria-hidden="true">
+            <circle class="pg-gauge-bg" cx="18" cy="18" r="15.9155"/>
+            <circle class="pg-gauge-fg" cx="18" cy="18" r="15.9155" stroke-dasharray="{{ [scan.score, 0.5]|max }}, 100"/>
+          </svg>
+          <div class="pg-gauge-label"><span class="fs-2 fw-bold" id="risk-score">{{ scan.score }}</span><small>risk / 100</small></div>
+        </div>
+        <div class="small text-body-secondary mt-2">{{ badge(scan.classification) }}</div>
+      </div>
+    </div>
+  </section>
+
+  {% with verdict = c %}{% include "main/_context_check.html" %}{% endwith %}
+
+  <div class="row g-4 mt-1">
+    <div class="col-lg-7">
+      <div class="card pg-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-list-check me-1"></i> Why we gave this result</span>
+          <span class="small text-body-secondary fw-normal">{{ scan.risk_reasons|length }} indicator{{ 's' if scan.risk_reasons|length != 1 }}</span>
+        </div>
+        <div id="reasons">
+          {% for r in scan.risk_reasons %}
+          <div class="pg-reason">
+            <span class="pg-icon pg-icon-sm pg-icon-{{ {'high': 'danger', 'medium': 'warn', 'low': 'brand'}[r.severity] }}"><i class="bi bi-{{ {'high': 'exclamation-octagon', 'medium': 'exclamation-triangle', 'low': 'info-circle'}[r.severity] }}"></i></span>
+            <div class="flex-grow-1">
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="fw-semibold">{{ r.title }}</span>
+                <span class="pg-sev pg-sev-{{ r.severity }}">{{ r.severity }}</span>
+              </div>
+              <div class="small text-body-secondary mt-1">{{ r.detail }}</div>
+              <div class="pg-reason-bar" title="+{{ r.weight }} risk points"><span class="pg-bar-{{ r.severity }}" style="width: {{ [r.weight * 2.5, 100]|min }}%"></span></div>
+            </div>
+            <span class="small text-body-secondary text-nowrap fw-semibold">+{{ r.weight }}</span>
+          </div>
+          {% else %}
+          <div class="pg-empty py-5">
+            <span class="pg-icon pg-icon-safe mb-3"><i class="bi bi-check2-circle"></i></span>
+            <div class="fw-semibold">No risk indicators found</div>
+            <div class="small text-body-secondary">None of the security checks flagged this URL.</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card pg-card mt-4">
+        <div class="accordion accordion-flush" id="tech">
+          <div class="accordion-item bg-transparent">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-semibold bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#tech-body" aria-expanded="false" aria-controls="tech-body">
+                <i class="bi bi-sliders me-2"></i> Technical details
+              </button>
+            </h2>
+            <div id="tech-body" class="accordion-collapse collapse" data-bs-parent="#tech">
+              <div class="accordion-body small">
+                {% set f = scan.features %}
+                <dl class="row mb-0 pg-dl">
+                  <dt class="col-6 col-md-4">Registered domain</dt><dd class="col-6 col-md-8 text-break">{{ f.registered_domain }}</dd>
+                  <dt class="col-6 col-md-4">Subdomain(s)</dt><dd class="col-6 col-md-8 text-break">{{ f.subdomain or '—' }} ({{ f.num_subdomains }} level{{ 's' if f.num_subdomains != 1 }})</dd>
+                  <dt class="col-6 col-md-4">Domain ending</dt><dd class="col-6 col-md-8">.{{ f.tld or '—' }}</dd>
+                  <dt class="col-6 col-md-4">URL length</dt><dd class="col-6 col-md-8">{{ f.url_length }} characters</dd>
+                  <dt class="col-6 col-md-4">Special characters</dt><dd class="col-6 col-md-8">{{ f.num_special_chars }}</dd>
+                  <dt class="col-6 col-md-4">Hyphens / digits in domain</dt><dd class="col-6 col-md-8">{{ f.num_hyphens_host }} / {{ f.num_digits_host }}</dd>
+                  <dt class="col-6 col-md-4">IP address host</dt><dd class="col-6 col-md-8">{{ 'Yes' if f.has_ip_host else 'No' }}</dd>
+                  <dt class="col-6 col-md-4">Suspicious keywords</dt><dd class="col-6 col-md-8">{{ f.suspicious_keywords|join(', ') or 'None' }}</dd>
+                  <dt class="col-6 col-md-4">Rule score</dt><dd class="col-6 col-md-8">{{ scan.rule_score }}{% if scan.ml_probability is not none %} · ML {{ '%.2f'|format(scan.ml_probability) }}{% endif %}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card pg-card mb-4">
+        <div class="card-header"><i class="bi bi-signpost-2 me-1"></i> What to do now</div>
+        <div class="card-body">
+          <ul class="list-unstyled pg-checklist mb-0">
+            {% for s in steps %}<li><i class="bi bi-check2-circle"></i><span>{{ s }}</span></li>{% endfor %}
+          </ul>
+          {% if c != 'safe' %}
+          <a class="btn btn-sm btn-outline-brand mt-3" href="{{ url_for('awareness.article', slug='how-to-report-suspicious-links') }}"><i class="bi bi-flag"></i> How to report it</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card pg-card mb-4">
+        <div class="card-header"><i class="bi bi-hand-thumbs-up me-1"></i> Positive signs</div>
+        <ul class="list-group list-group-flush small">
+          {% for g in scan.good_signs %}
+          <li class="list-group-item d-flex gap-2"><i class="bi bi-check2 text-success"></i><span>{{ g }}</span></li>
+          {% else %}
+          <li class="list-group-item text-body-secondary">None found.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      {% if scan.notes %}
+      <div class="card pg-card mb-4">
+        <div class="card-header"><i class="bi bi-info-circle me-1"></i> Notes</div>
+        <ul class="list-group list-group-flush small">
+          {% for n in scan.notes %}<li class="list-group-item">{{ n }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="pg-cta p-4">
+        <div class="fw-bold mb-1"><i class="bi bi-mortarboard me-1"></i> Learn to spot this yourself</div>
+        <p class="small text-white-50 mb-3">A 3-minute guide to reading any web address, plus an 8-question quiz.</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-sm btn-brand" href="{{ url_for('awareness.article', slug='how-to-identify-suspicious-urls') }}">Read the guide</a>
+          <a class="btn btn-sm btn-outline-light" href="{{ url_for('awareness.quiz') }}">Take the quiz</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/context_check.js') }}"></script>{% endblock %}

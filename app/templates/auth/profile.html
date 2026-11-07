@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="pg-eyebrow">Your account</div>
+  <h1 class="h3 pg-section-title mb-4">Profile &amp; security</h1>
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card pg-card h-100"><div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <span class="pg-avatar" style="width: 3.25rem; height: 3.25rem; font-size: 1.3rem">{{ (current_user.full_name or current_user.username)[:1] }}</span>
+          <div>
+            <div class="fs-5 fw-bold">{{ current_user.full_name or current_user.username }}</div>
+            <div class="small text-body-secondary">@{{ current_user.username }}{% if current_user.is_admin %} · <span class="pg-chip">Administrator</span>{% endif %}</div>
+          </div>
+        </div>
+        <div class="row g-2 text-center mb-4">
+          {% for label, key, tone in [('Phishing', 'Likely Phishing', 'danger'), ('Suspicious', 'Suspicious', 'warn'), ('Safe', 'Likely Safe', 'safe')] %}
+          <div class="col-4"><div class="p-2 rounded-3 pg-icon-{{ tone }}"><div class="fw-bold fs-5">{{ stats.get(key, 0) }}</div><div class="small">{{ label }}</div></div></div>
+          {% endfor %}
+        </div>
+        <dl class="row small mb-4 pg-dl">
+          <dt class="col-6">Member since</dt><dd class="col-6">{{ current_user.created_at|dt('%d %b %Y') }}</dd>
+          <dt class="col-6">Last login</dt><dd class="col-6">{{ current_user.last_login|dt }}</dd>
+          <dt class="col-6">Total scans</dt><dd class="col-6">{{ total }}</dd>
+        </dl>
+        <a class="btn btn-sm btn-outline-brand w-100" href="{{ url_for('main.history') }}"><i class="bi bi-clock-history"></i> View scan history</a>
+      </div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card pg-card h-100">
+        <div class="card-header"><i class="bi bi-person me-1"></i> Account details</div>
+        <div class="card-body p-4">
+          <form method="post" novalidate>
+            {{ profile_form.hidden_tag() }}
+            {{ field(profile_form.full_name) }}
+            {{ field(profile_form.email, type='email') }}
+            {{ profile_form.submit(class='btn btn-brand') }}
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card pg-card h-100">
+        <div class="card-header"><i class="bi bi-key me-1"></i> Change password</div>
+        <div class="card-body p-4">
+          <form method="post" novalidate>
+            {{ password_form.hidden_tag() }}
+            {{ field(password_form.current_password) }}
+            {{ field(password_form.new_password) }}
+            {{ field(password_form.confirm) }}
+            {{ password_form.submit(class='btn btn-outline-secondary') }}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

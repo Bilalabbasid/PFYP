@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.claude/
+instance/
+.env
+ml/model.joblib
+ml/model_metrics.json

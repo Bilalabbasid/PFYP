@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}How it works{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="h3 fw-bold">How PhishGuard works</h1>
+  <p class="text-body-secondary col-lg-9">PhishGuard analyses the <strong>text of a URL</strong>. It never visits the website, so analysing a dangerous link is safe.
+    The detection engine extracts security features from the address, runs a set of weighted rules and (optionally) a
+    machine-learning model, then turns the result into a 0–100 risk score.</p>
+
+  <div class="pg-flow my-4">
+    {% for step in ['User enters URL', 'URL validation', 'Feature extraction', 'Detection engine', 'Risk analysis', 'Classification', 'Result + explanation', 'Scan history'] %}
+    <div class="pg-flow-step"><span class="pg-flow-num">{{ loop.index }}</span>{{ step }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card pg-card h-100"><div class="card-body">
+        <h2 class="h6 fw-bold">Risk classification</h2>
+        <table class="table table-sm mb-3">
+          <tr><td><span class="badge pg-badge pg-badge-safe">Likely Safe</span></td><td>0 – {{ suspicious_threshold - 1 }}</td></tr>
+          <tr><td><span class="badge pg-badge pg-badge-suspicious">Suspicious</span></td><td>{{ suspicious_threshold }} – {{ phishing_threshold - 1 }}</td></tr>
+          <tr><td><span class="badge pg-badge pg-badge-phishing">Likely Phishing</span></td><td>{{ phishing_threshold }} – 100</td></tr>
+        </table>
+        <p class="small text-body-secondary">Each rule that fires adds points to the score. A recognised legitimate domain subtracts points.
+          Two or more <em>high-risk</em> indicators always produce at least a "Likely Phishing" result; one high-risk indicator always
+          produces at least "Suspicious".</p>
+        <h2 class="h6 fw-bold mt-4">Machine learning (optional)</h2>
+        <p class="small text-body-secondary mb-0">When a trained scikit-learn model is available, its phishing probability is blended with the
+          rule score (60% rules, 40% model). Train one with <code>python ml/train_model.py</code>.</p>
+        <h2 class="h6 fw-bold mt-4">Limitations</h2>
+        <ul class="small text-body-secondary mb-0">
+          <li>URL-based analysis cannot guarantee that a website is completely safe.</li>
+          <li>Attack techniques change over time and rules need updating.</li>
+          <li>A compromised legitimate website can host phishing pages.</li>
+          <li>The result is a risk assessment, not a guaranteed verdict.</li>
+        </ul>
+      </div></div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card pg-card h-100"><div class="card-body">
+        <h2 class="h6 fw-bold">Security checks performed</h2>
+        <ol class="small mb-0 pg-columns">
+          {% for r in rules %}<li>{{ r.title }}</li>{% endfor %}
+        </ol>
+      </div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

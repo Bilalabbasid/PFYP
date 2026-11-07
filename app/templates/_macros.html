@@ -1,0 +1,58 @@
+{% macro badge(classification) -%}
+  {%- set cls = {'Likely Safe': 'safe', 'Suspicious': 'suspicious', 'Likely Phishing': 'phishing'}.get(classification, 'secondary') -%}
+  {%- set icon = {'safe': 'shield-check', 'suspicious': 'exclamation-triangle', 'phishing': 'x-octagon'}.get(cls, 'question') -%}
+  <span class="badge pg-badge pg-badge-{{ cls }}"><i class="bi bi-{{ icon }}"></i> {{ classification }}</span>
+{%- endmacro %}
+
+{% macro field(f, placeholder='', type=None) -%}
+  <div class="mb-3">
+    {{ f.label(class='form-label') }}
+    {% if type %}
+      {{ f(class='form-control' + (' is-invalid' if f.errors else ''), placeholder=placeholder, type=type) }}
+    {% else %}
+      {{ f(class='form-control' + (' is-invalid' if f.errors else ''), placeholder=placeholder) }}
+    {% endif %}
+    {% for e in f.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+    {% if f.description %}<div class="form-text">{{ f.description }}</div>{% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro pager(pagination, endpoint) -%}
+  {% if pagination.pages > 1 %}
+  <nav aria-label="Pages">
+    <ul class="pagination pagination-sm justify-content-center mt-3">
+      {% set args = request.args.to_dict() %}
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        {% set _ = args.update({'page': pagination.prev_num or 1}) %}
+        <a class="page-link" href="{{ url_for(endpoint, **args) }}">&laquo;</a>
+      </li>
+      {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+          {% set _ = args.update({'page': p}) %}
+          <li class="page-item {% if p == pagination.page %}active{% endif %}"><a class="page-link" href="{{ url_for(endpoint, **args) }}">{{ p }}</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        {% set _ = args.update({'page': pagination.next_num or pagination.pages}) %}
+        <a class="page-link" href="{{ url_for(endpoint, **args) }}">&raquo;</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+{%- endmacro %}
+
+{% macro post_button(action, label, cls='btn-outline-danger', icon=None, confirm=None, title=None) -%}
+  <form method="post" action="{{ action }}" class="d-inline" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-sm {{ cls }}" {% if title %}title="{{ title }}" aria-label="{{ title }}"{% endif %}>{% if icon %}<i class="bi bi-{{ icon }}"></i>{% endif %}{% if label %} {{ label }}{% endif %}</button>
+  </form>
+{%- endmacro %}
+
+{% macro menu_post(action, label, icon, danger=False, confirm=None) -%}
+  <form method="post" action="{{ action }}" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="dropdown-item {% if danger %}text-danger{% endif %}"><i class="bi bi-{{ icon }} {% if danger %}text-danger{% endif %}"></i> {{ label }}</button>
+  </form>
+{%- endmacro %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge, pager, post_button %}
+{% block title %}Scan history{% endblock %}
+{% block content %}
+{% set total_all = counts.values()|sum %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <div class="pg-eyebrow">Your account</div>
+      <h1 class="h3 pg-section-title mb-0">Scan history</h1>
+      <div class="small text-body-secondary">{{ total_all }} link{{ 's' if total_all != 1 }} checked in total</div>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-sm btn-brand" href="{{ url_for('main.index') }}"><i class="bi bi-plus-lg"></i> New scan</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.export_history', classification=selected, q=search) }}"><i class="bi bi-download"></i> Export CSV</a>
+      {% if total_all %}
+      {{ post_button(url_for('main.clear_history'), 'Clear all', 'btn-outline-danger', icon='trash', confirm='This permanently deletes your entire scan history. This cannot be undone.') }}
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    {% for cls, key, icon, tone in [('Likely Safe', 'safe', 'shield-check', 'safe'), ('Suspicious', 'suspicious', 'exclamation-triangle', 'warn'), ('Likely Phishing', 'phishing', 'x-octagon', 'danger')] %}
+    <div class="col-md-4">
+      <div class="card pg-card pg-stat pg-stat-{{ key }} h-100"><div class="card-body d-flex align-items-center gap-3">
+        <span class="pg-icon pg-icon-{{ tone }}"><i class="bi bi-{{ icon }}"></i></span>
+        <div><div class="pg-stat-num">{{ counts.get(cls, 0) }}</div><div class="small text-body-secondary">{{ cls }}</div></div>
+        {% if total_all %}<div class="ms-auto small text-body-secondary">{{ (counts.get(cls, 0) / total_all * 100)|round|int }}%</div>{% endif %}
+      </div></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="card pg-card">
+    <div class="card-body d-flex flex-column flex-md-row gap-3 align-items-md-center border-bottom">
+      <ul class="nav pg-filter-pills flex-nowrap overflow-auto">
+        <li class="nav-item"><a class="nav-link {% if not selected %}active{% endif %}" href="{{ url_for('main.history', q=search or None) }}">All<span class="count">{{ total_all }}</span></a></li>
+        {% for cls in classifications %}
+        <li class="nav-item"><a class="nav-link text-nowrap {% if cls == selected %}active{% endif %}" href="{{ url_for('main.history', classification=cls, q=search or None) }}">{{ cls }}<span class="count">{{ counts.get(cls, 0) }}</span></a></li>
+        {% endfor %}
+      </ul>
+      <form class="ms-md-auto" method="get" role="search">
+        {% if selected %}<input type="hidden" name="classification" value="{{ selected }}">{% endif %}
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-transparent"><i class="bi bi-search"></i></span>
+          <input type="search" name="q" value="{{ search }}" class="form-control" placeholder="Search URLs…" aria-label="Search URLs">
+        </div>
+      </form>
+    </div>
+
+    {% if scans %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="history-table">
+        <thead class="pg-thead"><tr><th>Link</th><th>Result</th><th class="text-center">Risk</th><th>Scanned</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+          {% for s in scans %}
+          <tr>
+            <td class="pg-url-cell">
+              <a href="{{ url_for('main.result', scan_id=s.id) }}" class="text-decoration-none text-reset">
+                <div class="fw-semibold text-truncate">{{ s.domain }}</div>
+                <div class="small text-body-secondary font-monospace text-truncate">{{ s.url }}</div>
+              </a>
+            </td>
+            <td>{{ badge(s.classification) }}</td>
+            <td class="text-center"><span class="pg-score pg-score-{{ s.css_class }}">{{ s.score }}</span></td>
+            <td class="small text-nowrap text-body-secondary">{{ s.created_at|dt }}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon btn-ghost" href="{{ url_for('main.result', scan_id=s.id) }}" title="View details" aria-label="View details"><i class="bi bi-eye"></i></a>
+              {{ post_button(url_for('main.delete_scan', scan_id=s.id), '', 'btn-ghost btn-icon', icon='trash', title='Delete', confirm='Remove this scan from your history?') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="pg-empty">
+      <span class="pg-icon pg-icon-brand mb-3"><i class="bi bi-{{ 'search' if search or selected else 'inbox' }}"></i></span>
+      {% if search or selected %}
+      <div class="fw-semibold">No scans match your filters</div>
+      <div class="small text-body-secondary mb-3">Try a different search or show all results.</div>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.history') }}">Clear filters</a>
+      {% else %}
+      <div class="fw-semibold">No scans yet</div>
+      <div class="small text-body-secondary mb-3">Links you analyse while logged in will appear here.</div>
+      <a class="btn btn-sm btn-brand" href="{{ url_for('main.index') }}">Analyse your first link</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {{ pager(pagination, 'main.history') }}
+</div>
+{% endblock %}

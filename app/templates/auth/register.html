@@ -1,0 +1,25 @@
+{% extends "auth/_base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Create account{% endblock %}
+{% block form %}
+<h1 class="h3 pg-section-title mb-1">Create your account</h1>
+<p class="text-body-secondary mb-4">Free, and takes less than a minute.</p>
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  <div class="row g-3">
+    <div class="col-sm-6">{{ field(form.username, 'e.g. ali_khan') }}</div>
+    <div class="col-sm-6">{{ field(form.full_name, 'Optional') }}</div>
+  </div>
+  {{ field(form.email, 'you@example.com', type='email') }}
+  <div class="mb-3">
+    {{ form.password.label(class='form-label') }}
+    {{ form.password(class='form-control' + (' is-invalid' if form.password.errors else ''), placeholder='Create a password', autocomplete='new-password') }}
+    {% for e in form.password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+    <div class="pg-strength" id="pw-strength" data-for="password"><span></span></div>
+    <div class="form-text" id="pw-strength-label">At least 8 characters with letters and numbers.</div>
+  </div>
+  {{ field(form.confirm, 'Repeat your password') }}
+  {{ form.submit(class='btn btn-brand w-100 py-2 fw-semibold mt-2') }}
+</form>
+<p class="small text-center text-body-secondary mt-4 mb-0">Already have an account? <a href="{{ url_for('auth.login') }}" class="fw-semibold">Log in</a></p>
+{% endblock %}

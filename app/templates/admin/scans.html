@@ -1,0 +1,44 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import badge, pager, post_button %}
+{% block title %}Scanned URLs{% endblock %}
+{% block admin_content %}
+<div>
+  <h1 class="h3 pg-section-title mb-4">Scanned / detected URLs</h1>
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-sm-6 col-md-5"><input type="search" class="form-control form-control-sm" name="q" value="{{ search }}" placeholder="Search URL" aria-label="Search URL"></div>
+    <div class="col-sm-4 col-md-3">
+      <select name="classification" class="form-select form-select-sm" aria-label="Filter by status">
+        <option value="">All results</option>
+        {% for cls in classifications %}<option value="{{ cls }}" {% if cls == selected %}selected{% endif %}>{{ cls }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-auto"><button class="btn btn-sm btn-secondary">Filter</button></div>
+  </form>
+  <p class="small text-body-secondary">{{ pagination.total }} scan(s) found.</p>
+  <div class="card pg-card overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="pg-thead"><tr><th>#</th><th>URL</th><th>Result</th><th>Risk</th><th>Top reason</th><th>User</th><th>Source</th><th>Date</th><th></th></tr></thead>
+        <tbody>
+          {% for s in scans %}
+          <tr>
+            <td class="small text-body-secondary">{{ s.id }}</td>
+            <td class="pg-url-cell font-monospace small"><a class="text-body text-decoration-none" href="{{ url_for('main.result', scan_id=s.id) }}">{{ s.url }}</a></td>
+            <td>{{ badge(s.classification) }}</td>
+            <td class="fw-semibold">{{ s.score }}</td>
+            <td class="small">{{ s.risk_reasons[0].title if s.risk_reasons else '-' }}</td>
+            <td class="small">{{ s.user.username if s.user else 'guest' }}</td>
+            <td class="small">{{ s.source }}</td>
+            <td class="small text-nowrap">{{ s.created_at|dt }}</td>
+            <td>{{ post_button(url_for('admin.delete_scan', scan_id=s.id), '', icon='trash', title='Delete scan', confirm='Delete this scan?') }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="9" class="text-center text-body-secondary py-4">No scans found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {{ pager(pagination, 'admin.scans') }}
+</div>
+{% endblock %}

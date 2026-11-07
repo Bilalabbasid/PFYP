@@ -1,0 +1,16 @@
+{% extends "auth/_base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Log in{% endblock %}
+{% block side_title %}Welcome back{% endblock %}
+{% block form %}
+<h1 class="h3 pg-section-title mb-1">Log in</h1>
+<p class="text-body-secondary mb-4">Access your profile and scan history.</p>
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  {{ field(form.username, 'username or you@example.com') }}
+  {{ field(form.password, 'Your password') }}
+  <div class="form-check mb-4">{{ form.remember(class='form-check-input') }} {{ form.remember.label(class='form-check-label small') }}</div>
+  {{ form.submit(class='btn btn-brand w-100 py-2 fw-semibold') }}
+</form>
+<p class="small text-center text-body-secondary mt-4 mb-0">New to PhishGuard? <a href="{{ url_for('auth.register') }}" class="fw-semibold">Create an account</a></p>
+{% endblock %}

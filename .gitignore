@@ -1,0 +1,18 @@
+# Python / tooling
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local secrets, database and generated files
+instance/
+.env
+*.log
+ml/model.joblib
+ml/model_metrics.json
+
+# Editor / assistant settings
+.claude/
+.vscode/
+.idea/

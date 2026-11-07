@@ -1,0 +1,49 @@
+# PhishGuard + MySQL 8.
+#
+#   Only the database (for local development with `python run.py`):
+#       docker compose up -d mysql
+#
+#   The whole application (http://localhost:8000):
+#       docker compose up -d --build
+#
+# Values below are for development. For a real server put your own values in
+# a .env file next to this file (see README, "Deploy with Docker").
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: phishguard-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: phishguard
+      MYSQL_USER: phishguard
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-phishguard_dev}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-phishguard_root_dev}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - phishguard_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build: .
+    container_name: phishguard-web
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://phishguard:${MYSQL_PASSWORD:-phishguard_dev}@mysql:3306/phishguard
+      SECRET_KEY: ${SECRET_KEY:-change-this-secret-key}
+      BEHIND_PROXY: ${BEHIND_PROXY:-0}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-0}
+      ML_ENABLED: "1"
+    ports:
+      - "8000:8000"
+
+volumes:
+  phishguard_mysql:

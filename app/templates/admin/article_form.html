@@ -1,0 +1,35 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ 'Edit' if article else 'New' }} article{% endblock %}
+{% block admin_content %}
+<div>
+  <h1 class="h3 pg-section-title mb-4">{{ 'Edit article' if article else 'New awareness article' }}</h1>
+  <div class="card pg-card overflow-hidden"><div class="card-body p-4">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="row">
+        <div class="col-md-8">{{ field(form.title) }}</div>
+        <div class="col-md-2">
+          <div class="mb-3">{{ form.category.label(class='form-label') }}{{ form.category(class='form-select') }}</div>
+        </div>
+        <div class="col-md-2">
+          <div class="mb-3">{{ form.icon.label(class='form-label') }}{{ form.icon(class='form-select') }}</div>
+        </div>
+      </div>
+      {{ field(form.summary) }}
+      <div class="mb-3">
+        {{ form.content.label(class='form-label') }}
+        {{ form.content(class='form-control font-monospace' + (' is-invalid' if form.content.errors else ''), rows=16) }}
+        {% for e in form.content.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        <div class="form-text">{{ form.content.description }}</div>
+      </div>
+      <div class="row align-items-end">
+        <div class="col-md-2">{{ field(form.position, type='number') }}</div>
+        <div class="col-md-4"><div class="form-check mb-3">{{ form.published(class='form-check-input') }} {{ form.published.label(class='form-check-label') }}</div></div>
+      </div>
+      {{ form.submit(class='btn btn-brand') }}
+      <a class="btn btn-link" href="{{ url_for('admin.articles') }}">Cancel</a>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

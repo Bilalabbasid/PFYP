@@ -1,0 +1,57 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import pager, post_button, menu_post %}
+{% block title %}Manage users{% endblock %}
+{% block admin_content %}
+<div>
+  <h1 class="h3 pg-section-title mb-4">Manage users</h1>
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-sm-6 col-md-4"><input type="search" class="form-control form-control-sm" name="q" value="{{ search }}" placeholder="Search username or email" aria-label="Search users"></div>
+    <div class="col-auto"><button class="btn btn-sm btn-secondary">Search</button></div>
+  </form>
+  <div class="card pg-card overflow-hidden">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0" id="users-table">
+        <thead class="pg-thead"><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Scans</th><th>Joined</th><th>Last login</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr data-username="{{ u.username }}">
+            <td><div class="fw-semibold">{{ u.username }}</div><div class="small text-body-secondary">{{ u.full_name }}</div></td>
+            <td class="small">{{ u.email }}</td>
+            <td>{% if u.is_admin %}<span class="badge text-bg-dark">Admin</span>{% else %}<span class="badge pg-chip">User</span>{% endif %}</td>
+            <td>
+              {% if not u.active %}<span class="badge text-bg-secondary">Disabled</span>
+              {% elif u.is_locked() %}<span class="badge text-bg-warning">Locked</span>
+              {% else %}<span class="badge text-bg-success">Active</span>{% endif %}
+            </td>
+            <td>{{ scan_counts.get(u.id, 0) }}</td>
+            <td class="small text-nowrap">{{ u.created_at|dt('%d %b %Y') }}</td>
+            <td class="small text-nowrap">{{ u.last_login|dt }}</td>
+            <td class="text-end text-nowrap">
+              {% if u.id != current_user.id %}
+              <div class="dropdown">
+                <button class="btn btn-sm btn-icon btn-ghost" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" aria-label="Actions for {{ u.username }}"><i class="bi bi-three-dots"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  {% if u.is_locked() %}
+                  <li>{{ menu_post(url_for('admin.unlock_user', user_id=u.id), 'Unlock account', 'unlock') }}</li>
+                  {% endif %}
+                  <li>{{ menu_post(url_for('admin.toggle_active', user_id=u.id), 'Disable' if u.active else 'Enable', 'person-slash' if u.active else 'person-check') }}</li>
+                  <li>{{ menu_post(url_for('admin.toggle_admin', user_id=u.id), 'Remove admin' if u.is_admin else 'Make admin', 'shield-minus' if u.is_admin else 'shield-plus') }}</li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>{{ menu_post(url_for('admin.delete_user', user_id=u.id), 'Delete user', 'trash', danger=True, confirm='Delete ' ~ u.username ~ ' and all their scans? This cannot be undone.') }}</li>
+                </ul>
+              </div>
+              {% else %}
+                <span class="small text-body-secondary">(you)</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="text-center text-body-secondary py-4">No users found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {{ pager(pagination, 'admin.users') }}
+</div>
+{% endblock %}

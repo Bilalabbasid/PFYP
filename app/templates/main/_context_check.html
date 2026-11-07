@@ -1,0 +1,36 @@
+{# Follow-up questions about how the link arrived. Runs in the browser only; answers are not stored. #}
+{% set questions = [
+  ('expected', 'Were you expecting this message or link?', 'no'),
+  ('urgent', 'Does it pressure you to act fast, or threaten to close/block something?', 'yes'),
+  ('secrets', 'Does it ask for a password, OTP/verification code, PIN or card details?', 'yes'),
+  ('prize', 'Does it offer a prize, refund, job or deal that seems too good to be true?', 'yes'),
+  ('verified', 'Can you confirm the sender through another channel (phone call, official app)?', 'no'),
+] %}
+<section class="card pg-card mt-4" id="context-check" data-verdict="{{ verdict }}" aria-labelledby="ctx-title">
+  <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span id="ctx-title"><i class="bi bi-ui-checks me-1"></i> Check the message too <span class="text-body-secondary fw-normal small">— 5 quick questions</span></span>
+    <span class="small text-body-secondary fw-normal" id="ctx-progress">0 of {{ questions|length }} answered</span>
+  </div>
+  <div class="card-body">
+    <p class="small text-body-secondary mb-3">The link is only half the story. Tell us how you received it and we'll combine your answers with the link verdict. Your answers stay in your browser.</p>
+    <div class="d-grid gap-2">
+      {% for key, text, risky in questions %}
+      <div class="pg-ctx-q" data-key="{{ key }}" data-risky="{{ risky }}">
+        <div class="small fw-medium">{{ loop.index }}. {{ text }}</div>
+        <div class="btn-group btn-group-sm pg-ctx-opts" role="group" aria-label="{{ text }}">
+          {% for value, label in [('yes', 'Yes'), ('no', 'No'), ('unsure', 'Not sure')] %}
+          <input type="radio" class="btn-check" name="ctx-{{ key }}" id="ctx-{{ key }}-{{ value }}" value="{{ value }}" autocomplete="off">
+          <label class="btn btn-outline-secondary" for="ctx-{{ key }}-{{ value }}">{{ label }}</label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="pg-feedback mt-3 d-none" id="ctx-result" aria-live="polite">
+      <div class="fw-bold d-flex align-items-center gap-2" id="ctx-result-title"></div>
+      <div class="small mt-1" id="ctx-result-text"></div>
+      <ul class="small mb-0 mt-2 ps-3" id="ctx-result-flags"></ul>
+    </div>
+    <button type="button" class="btn btn-sm btn-link px-0 mt-2 d-none" id="ctx-reset"><i class="bi bi-arrow-counterclockwise"></i> Reset answers</button>
+  </div>
+</section>
