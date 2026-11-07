@@ -84,6 +84,21 @@ macOS / Linux:
 
 **Step 4:** Open <http://127.0.0.1:5000> in your browser. Press `Ctrl + C` in the terminal to stop.
 
+### Files that are not in the repository
+
+Some files are deliberately left out of Git: they are secret, machine-specific or generated.
+The setup script creates all of them. If you set up manually, the step listed creates each one.
+
+| Not in Git | What it is | Created by (setup script does all of these) |
+|---|---|---|
+| `.venv/` | Python virtual environment with the installed packages | Manual steps 2–4 |
+| `.env` | Your local settings (database, ML, ports) | Manual step 5: copy of `.env.example` |
+| `instance/secret_key` | Key that signs login sessions | Generated automatically on first start, or set `SECRET_KEY` in `.env` ([section 4](#4-configuration-env)) |
+| `instance/phishguard.db` | SQLite database (users, scans, articles) | Created automatically on first start; manual step 7 also adds demo data |
+| `ml/model.joblib` | Trained machine-learning model | Manual step 6. Optional: without it the app uses the rules only |
+
+Never commit `.env`, `instance/` or the model: `.gitignore` already excludes them.
+
 ---
 
 ## 2. Run it locally (manual, step by step)
