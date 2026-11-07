@@ -29,6 +29,6 @@ echo [5/5] Creating database, demo accounts and sample data ...
 .venv\Scripts\flask --app run seed-demo
 
 echo.
-echo Setup complete. Start the app with:   run.bat
+echo Setup complete. Start the app with:   .\run.bat
 echo Then open http://127.0.0.1:5000  (demo admin: admin / Admin1234)
 endlocal

@@ -54,10 +54,10 @@ cd PFYP
 **Step 2: Run the setup script once.** It creates a virtual environment, installs the
 dependencies, creates `.env`, trains the ML model, and creates the database with demo accounts.
 
-Windows (Command Prompt or PowerShell):
+Windows (PowerShell or Command Prompt — note the `.\` at the start):
 
 ```bash
-setup.bat
+.\setup.bat
 ```
 
 macOS / Linux:
@@ -73,7 +73,7 @@ The first run downloads about 100 MB of packages and can take a few minutes.
 Windows:
 
 ```bash
-run.bat
+.\run.bat
 ```
 
 macOS / Linux:
@@ -566,7 +566,7 @@ database/      mysql_migrations.sql
 ml/            build_dataset.py, train_model.py, evaluate.py, data/urls.csv
 tests/         pytest suite
 config.py  run.py (development)  wsgi.py (production)
-setup.bat / setup.sh / run.bat   one-command setup and start
+setup.bat / setup.sh / run.bat   one-command setup and start (`.\setup.bat` on Windows)
 Dockerfile  docker-compose.yml  Procfile  requirements.txt  .env.example
 ```
 
@@ -605,6 +605,7 @@ There are no live reputation lookups, by design: the link is never contacted.
 
 | Problem | Fix |
 |---|---|
+| `setup.bat` / `run.bat` "is not recognized" | Type it with `.\` in front: `.\setup.bat`, and make sure you are inside the `PFYP` folder (`cd PFYP`). |
 | `python` is not recognised | Reinstall Python and tick "Add python.exe to PATH", or use `py` instead of `python` on Windows. |
 | `flask` is not recognised | Activate the virtual environment first (step 3), or use `.venv\Scripts\flask` / `.venv/bin/flask`. |
 | PowerShell blocks `Activate.ps1` | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, or use Command Prompt. |
